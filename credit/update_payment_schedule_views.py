@@ -9,8 +9,23 @@ from calendar import monthrange
 
 
 class PaymentScheduleUpdateView(APIView):
+    """View for updating payment schedules."""
+
     @staticmethod
     def post(request):
+        """
+        Handle POST request to update a payment schedule.
+
+        Args:
+            request (HttpRequest): The HTTP request object.
+
+        Returns:
+            Response: HTTP response indicating the status of the request.
+
+        Payload example:
+        { "payment_id": 1, "principal_reduction": 500 }
+        """
+
         serializer = PaymentUpdateSerializer(data=request.data)
         if serializer.is_valid():
             payment_id = serializer.validated_data['payment_id']
@@ -20,6 +35,7 @@ class PaymentScheduleUpdateView(APIView):
                 payment = payment_schedule.payment
                 payment.principal -= principal_reduction
                 payment.save()
+
                 # Recalculate interest for the current payment
                 interest_rate_per_period = payment_schedule.interest_rate / 12
                 interest_payment = payment.principal * interest_rate_per_period
@@ -38,6 +54,7 @@ class PaymentScheduleUpdateView(APIView):
                     current_date = payment_schedule.loan_start_date
                     days_in_month = monthrange(current_date.year, current_date.month)[1]
                     delta = timedelta(days=days_in_month)
+
                 for following_payment in following_payments:
                     interest_payment = principal_remaining * interest_rate_per_period
                     following_payment.interest = interest_payment
@@ -46,6 +63,7 @@ class PaymentScheduleUpdateView(APIView):
 
                     payment_schedule.loan_start_date += delta
                     payment_schedule.save()
+
                 return Response(status=status.HTTP_200_OK)
 
             except ObjectDoesNotExist:

@@ -7,8 +7,30 @@ from .serializers import PaymentScheduleSerializer
 
 
 class PaymentScheduleCreateView(APIView):
+    """
+    API view for creating a payment schedule.
+
+    POST request with the payment details will generate a payment schedule
+    and store it in the database.
+
+    Returns:
+        Response: Created payment schedule in JSON format or error messages.
+    """
+
     @staticmethod
     def post(request):
+        """
+        Handle POST request to create a payment schedule.
+
+        Args:
+            request (Request): HTTP request object containing payment details.
+
+        Returns:
+            Response: Created payment schedule in JSON format or error messages.
+
+        Payload example:
+        { "amount": 10000, "loan_start_date": "2023-07-10", "number_of_payments": 12, "periodicity": "1m", "interest_rate": 5 }
+        """
         serializer = PaymentScheduleSerializer(data=request.data)
         if serializer.is_valid():
             amount = serializer.validated_data['amount']
